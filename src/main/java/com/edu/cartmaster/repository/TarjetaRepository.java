@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface TarjetaRepository extends JpaRepository<Tarjeta, Integer> {
     List<Tarjeta> findByCliente_ClienteId(Integer clienteId);
-  
+
     List<Tarjeta> findByClienteClienteId(Integer clienteId);
     void deleteByClienteClienteId(Integer clienteId);
 }

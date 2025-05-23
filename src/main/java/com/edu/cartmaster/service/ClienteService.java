@@ -2,6 +2,7 @@ package com.edu.cartmaster.service;
 
 import com.edu.cartmaster.model.Cliente;
 import com.edu.cartmaster.model.Tarjeta;
+import com.edu.cartmaster.repository.AdministradorRepostory;
 import com.edu.cartmaster.repository.ClienteRepository;
 import com.edu.cartmaster.repository.TarjetaRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final TarjetaRepository tarjetaRepository;
+    private final AdministradorRepostory administradorRepository;
   
     //Metodo para registrar un cliente
     public Cliente registrarCliente(Cliente cliente) {
@@ -30,19 +32,28 @@ public class ClienteService {
 
     //Metodo para logear un cliente
     public String login(String correo, String contrasena) {
-        // Buscar cliente
-        Optional<Cliente> clienteOpt = clienteRepository.findByClienteCorreo(correo);
-        if (clienteOpt.isPresent() && clienteOpt.get().getClienteContrasena().equals(contrasena)) {
-            return "CLIENTE";
+        // Verificar si es administrador
+        Optional<com.edu.cartmaster.model.Administrador> adminOpt = administradorRepository.findByCorreo(correo);
+        if (adminOpt.isPresent()) {
+            if (adminOpt.get().getContrasena().equals(contrasena)) {
+                return "ADMINISTRADOR";
+            }
         }
+
+        // Verificar si es cliente
+        Optional<Cliente> clienteOpt = clienteRepository.findByClienteCorreo(correo);
+        if (clienteOpt.isPresent()) {
+            if (clienteOpt.get().getClienteContrasena().equals(contrasena)) {
+                return "CLIENTE";
+            }
+        }
+
         return "CREDENCIALES_INVALIDAS";
     }
-
 
     public List<Tarjeta> obtenerTarjetasPorClienteId(Integer clienteId) {
         return tarjetaRepository.findByCliente_ClienteId(clienteId);
     }
-
 
     //Servicio que elimina un cliente en la bse de datos.
     public void eliminarCliente(Integer id) {
@@ -64,6 +75,5 @@ public class ClienteService {
         // Finalmente eliminamos el cliente
         clienteRepository.delete(cliente);
     }
-
 
 }
