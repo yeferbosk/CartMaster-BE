@@ -29,10 +29,14 @@ public class ClienteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
     }
 
-    //Controlador DELETE para
-    @DeleteMapping("/eliminar/{id}")
-    public ResponseEntity<Void> eliminarCliente(@PathVariable Integer id) {
-        clienteService.eliminarCliente(id);
-        return ResponseEntity.noContent().build();
+    //Controlador DELETE para eliminar un cliente y sus tarjetas.
+    @DeleteMapping("/{clienteId}")
+    public ResponseEntity<Void> eliminarCliente(@PathVariable Integer clienteId) {
+        try {
+            clienteService.eliminarClienteYTarjetas(clienteId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
