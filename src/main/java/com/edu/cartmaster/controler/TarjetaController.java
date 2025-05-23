@@ -3,11 +3,13 @@ package com.edu.cartmaster.controler;
 import com.edu.cartmaster.model.Tarjeta;
 import com.edu.cartmaster.service.TarjetaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -77,4 +79,29 @@ public class TarjetaController {
 
         return ResponseEntity.ok(resultado);
     }
+
+    @PostMapping("/crear/{clienteId}")
+    public ResponseEntity<Tarjeta> crearTarjeta(
+            @PathVariable Integer clienteId,
+            @RequestBody Tarjeta tarjeta) {
+
+        Tarjeta nueva = tarjetaService.registrarTarjeta(tarjeta, clienteId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nueva);
+    }
+
+    @PutMapping("/actualizar_con_cupos/{tarjetaId}")
+    public ResponseEntity<?> actualizarTarjetaConCupos(
+            @PathVariable Integer tarjetaId,
+            @RequestBody Tarjeta tarjetaActualizada) {
+
+        Optional<Tarjeta> actualizada = tarjetaService.actualizarTarjeta(tarjetaId, tarjetaActualizada);
+
+        if (actualizada.isPresent()) {
+            return ResponseEntity.ok(actualizada.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Tarjeta no encontrada con ID: " + tarjetaId);
+        }
+    }
+
 } 

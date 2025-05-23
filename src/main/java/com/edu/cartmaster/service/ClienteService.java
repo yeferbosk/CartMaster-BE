@@ -27,7 +27,22 @@ public class ClienteService {
         if (yaExiste) {
             throw new RuntimeException("El correo ya está registrado");
         }
-          return clienteRepository.save(cliente);
+        // Validar formato de correo con expresión regular
+        if (!cliente.getClienteCorreo().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
+            throw new RuntimeException("El formato del correo es inválido");
+        }
+
+        // Validar dominio permitido
+        if (!cliente.getClienteCorreo().endsWith("@gmail.com") && !cliente.getClienteCorreo().endsWith("@correo.com")) {
+            throw new RuntimeException("Solo se permiten correos con dominios @gmail.com o @correo.com");
+        }
+
+        // Validar duplicado
+        if (clienteRepository.findByClienteCorreo(cliente.getClienteCorreo()).isPresent()) {
+            throw new RuntimeException("El correo ya está registrado");
+        }
+
+        return clienteRepository.save(cliente);
     }
 
     //Metodo para logear un cliente
@@ -75,5 +90,7 @@ public class ClienteService {
         // Finalmente eliminamos el cliente
         clienteRepository.delete(cliente);
     }
+
+
 
 }
