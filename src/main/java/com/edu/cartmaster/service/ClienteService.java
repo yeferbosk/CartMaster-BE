@@ -1,34 +1,45 @@
 package com.edu.cartmaster.service;
 
 import com.edu.cartmaster.model.Cliente;
+import com.edu.cartmaster.model.Tarjeta;
 import com.edu.cartmaster.repository.ClienteRepository;
+import com.edu.cartmaster.repository.TarjetaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private final TarjetaRepository tarjetaRepository;
 
-    //Servicio que usa metodo findAll del repositorio para traer todos los clientes.
-    public List<Cliente> obtenerTodos() {
-        return clienteRepository.findAll();
-    }
-
-    //Servicio que usa save del repositorio para guardar un cliente en la base de datos.
-    public Cliente crearCliente(Cliente cliente) {
+    //Metodo para registrar un cliente
+    public Cliente registrarCliente(Cliente cliente) {
+        // Verifica si el correo ya existe
+        boolean yaExiste = clienteRepository.findByClienteCorreo(cliente.getClienteCorreo()).isPresent();
+        if (yaExiste) {
+            throw new RuntimeException("El correo ya está registrado");
+        }
         return clienteRepository.save(cliente);
     }
 
-    //Servicio que elimina un cliente en la bse de datos.
-    public void eliminarCliente(Integer id) {
-        if (!clienteRepository.existsById(id)) {
-            throw new RuntimeException("No se puede eliminar, cliente no encontrado con ID: " + id);
+    //Metodo para logear un cliente
+    public String login(String correo, String contrasena) {
+        // Buscar cliente
+        Optional<Cliente> clienteOpt = clienteRepository.findByClienteCorreo(correo);
+        if (clienteOpt.isPresent() && clienteOpt.get().getClienteContrasena().equals(contrasena)) {
+            return "CLIENTE";
         }
-        clienteRepository.deleteById(id);
+        return "CREDENCIALES_INVALIDAS";
     }
+
+    public List<Tarjeta> obtenerTarjetasPorClienteId(Integer clienteId) {
+        return tarjetaRepository.findByCliente_ClienteId(clienteId);
+    }
+
 
 }
