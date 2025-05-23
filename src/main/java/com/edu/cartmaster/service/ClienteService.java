@@ -6,6 +6,7 @@ import com.edu.cartmaster.repository.ClienteRepository;
 import com.edu.cartmaster.repository.TarjetaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,7 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final TarjetaRepository tarjetaRepository;
-
+  
     //Metodo para registrar un cliente
     public Cliente registrarCliente(Cliente cliente) {
         // Verifica si el correo ya existe
@@ -24,7 +25,7 @@ public class ClienteService {
         if (yaExiste) {
             throw new RuntimeException("El correo ya está registrado");
         }
-        return clienteRepository.save(cliente);
+          return clienteRepository.save(cliente);
     }
 
     //Metodo para logear un cliente
@@ -37,8 +38,23 @@ public class ClienteService {
         return "CREDENCIALES_INVALIDAS";
     }
 
+
     public List<Tarjeta> obtenerTarjetasPorClienteId(Integer clienteId) {
         return tarjetaRepository.findByCliente_ClienteId(clienteId);
+    }
+
+
+    @Transactional
+    public void eliminarClienteYTarjetas(Integer clienteId) {
+        // Primero verificamos si el cliente existe
+        Cliente cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + clienteId));
+
+        // Eliminamos primero las tarjetas asociadas al cliente
+        tarjetaRepository.deleteByClienteClienteId(clienteId);
+
+        // Finalmente eliminamos el cliente
+        clienteRepository.delete(cliente);
     }
 
 

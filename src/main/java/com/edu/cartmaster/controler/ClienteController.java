@@ -47,6 +47,17 @@ public class ClienteController {
         return ResponseEntity.ok(tarjetas);
     }
 
+    //Controlador DELETE para eliminar un cliente y sus tarjetas.
+    @DeleteMapping("/{clienteId}")
+    public ResponseEntity<Void> eliminarCliente(@PathVariable Integer clienteId) {
+        try {
+            clienteService.eliminarClienteYTarjetas(clienteId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
 
 }
