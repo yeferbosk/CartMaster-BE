@@ -44,6 +44,14 @@ public class ClienteService {
     }
 
 
+    //Servicio que elimina un cliente en la bse de datos.
+    public void eliminarCliente(Integer id) {
+        if (!clienteRepository.existsById(id)) {
+            throw new RuntimeException("No se puede eliminar, cliente no encontrado con ID: " + id);
+        }
+        clienteRepository.deleteById(id);
+    }
+
     @Transactional
     public void eliminarClienteYTarjetas(Integer clienteId) {
         // Primero verificamos si el cliente existe
