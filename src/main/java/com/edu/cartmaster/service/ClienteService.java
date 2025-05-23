@@ -2,8 +2,10 @@ package com.edu.cartmaster.service;
 
 import com.edu.cartmaster.model.Cliente;
 import com.edu.cartmaster.repository.ClienteRepository;
+import com.edu.cartmaster.repository.TarjetaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -12,6 +14,7 @@ import java.util.List;
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private final TarjetaRepository tarjetaRepository;
 
     //Servicio que usa metodo findAll del repositorio para traer todos los clientes.
     public List<Cliente> obtenerTodos() {
@@ -29,6 +32,19 @@ public class ClienteService {
             throw new RuntimeException("No se puede eliminar, cliente no encontrado con ID: " + id);
         }
         clienteRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void eliminarClienteYTarjetas(Integer clienteId) {
+        // Primero verificamos si el cliente existe
+        Cliente cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + clienteId));
+
+        // Eliminamos primero las tarjetas asociadas al cliente
+        tarjetaRepository.deleteByClienteClienteId(clienteId);
+
+        // Finalmente eliminamos el cliente
+        clienteRepository.delete(cliente);
     }
 
 }

@@ -34,7 +34,7 @@ public class Tarjeta {
     @Column(nullable = false)
     private Double tarjetaCupoDisponible;
 
-    @Column(nullable = false)
+    @Column(nullable = false, insertable = false, updatable = false)
     private Double tarjetaCupoUtilizado;
 
     @ManyToOne
