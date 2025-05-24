@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,13 +31,20 @@ public class ClienteController {
     }
     //EndPont de login
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Map<String, String> credenciales) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credenciales) {
         String correo = credenciales.get("correo");
         String contrasena = credenciales.get("contrasena");
-        String resultado = clienteService.login(correo, contrasena);
-        if (resultado.equals("CREDENCIALES_INVALIDAS")) {
-            return ResponseEntity.status(401).body(resultado);
+
+        Map<String, Object> resultado = clienteService.login(correo, contrasena);
+
+        if (resultado == null) {
+            // Credenciales inválidas
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "CREDENCIALES_INVALIDAS");
+            return ResponseEntity.status(401).body(error);
         }
+
+        // Credenciales válidas (cliente o administrador)
         return ResponseEntity.ok(resultado);
     }
 
@@ -57,7 +65,5 @@ public class ClienteController {
             return ResponseEntity.notFound().build();
         }
     }
-
-
 
 }

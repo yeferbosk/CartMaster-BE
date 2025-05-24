@@ -1,5 +1,6 @@
 package com.edu.cartmaster.service;
 
+import com.edu.cartmaster.model.Administrador;
 import com.edu.cartmaster.model.Cliente;
 import com.edu.cartmaster.model.Tarjeta;
 import com.edu.cartmaster.repository.AdministradorRepostory;
@@ -9,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -46,25 +49,28 @@ public class ClienteService {
     }
 
     //Metodo para logear un cliente
-    public String login(String correo, String contrasena) {
+    public Map<String, Object> login(String correo, String contrasena) {
         // Verificar si es administrador
-        Optional<com.edu.cartmaster.model.Administrador> adminOpt = administradorRepository.findByCorreo(correo);
-        if (adminOpt.isPresent()) {
-            if (adminOpt.get().getContrasena().equals(contrasena)) {
-                return "ADMINISTRADOR";
-            }
+        Optional<Administrador> adminOpt = administradorRepository.findByCorreo(correo);
+        if (adminOpt.isPresent() && adminOpt.get().getContrasena().equals(contrasena)) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("tipo", "ADMINISTRADOR");
+            return response;
         }
 
         // Verificar si es cliente
         Optional<Cliente> clienteOpt = clienteRepository.findByClienteCorreo(correo);
-        if (clienteOpt.isPresent()) {
-            if (clienteOpt.get().getClienteContrasena().equals(contrasena)) {
-                return "CLIENTE";
-            }
+        if (clienteOpt.isPresent() && clienteOpt.get().getClienteContrasena().equals(contrasena)) {
+            Cliente cliente = clienteOpt.get();
+            Map<String, Object> response = new HashMap<>();
+            response.put("tipo", "CLIENTE");
+            response.put("clienteId", cliente.getClienteId());
+            return response;
         }
 
-        return "CREDENCIALES_INVALIDAS";
+        return null;
     }
+
 
     public List<Tarjeta> obtenerTarjetasPorClienteId(Integer clienteId) {
         return tarjetaRepository.findByCliente_ClienteId(clienteId);
