@@ -7,10 +7,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/api/tarjetas")
@@ -39,43 +41,27 @@ public class TarjetaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{tarjetaId}")
-    public ResponseEntity<Tarjeta> actualizarTarjeta(
-            @PathVariable Integer tarjetaId,
-            @RequestBody Tarjeta tarjeta) {
-        return tarjetaService.actualizarTarjeta(tarjetaId, tarjeta)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{tarjetaId}")
-    public ResponseEntity<Tarjeta> inactivarTarjeta(@PathVariable Integer tarjetaId) {
-        return tarjetaService.inactivarTarjeta(tarjetaId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
     @GetMapping("/con-clientes")
     public ResponseEntity<List<Map<String, Object>>> obtenerTarjetasConClientes() {
         List<Tarjeta> tarjetas = tarjetaService.obtenerTarjetasConClientes();
-        
+
         List<Map<String, Object>> resultado = tarjetas.stream()
-            .map(tarjeta -> Map.of(
-                "tarjetaId", tarjeta.getTarjetaId(),
-                "numeroTarjeta", tarjeta.getTarjetaNumero(),
-                "fechaVencimiento", tarjeta.getTarjetaFechaVencimiento(),
-                "franquicia", tarjeta.getTarjetaFranquicia(),
-                "estado", tarjeta.getTarjetaEstado(),
-                "cupoTotal", tarjeta.getTarjetaCupoTotal(),
-                "cupoDisponible", tarjeta.getTarjetaCupoDisponible(),
-                "cupoUtilizado", tarjeta.getTarjetaCupoUtilizado(),
-                "cliente", Map.of(
-                    "id", tarjeta.getCliente().getClienteId(),
-                    "nombre", tarjeta.getCliente().getClienteNombre(),
-                    "correo", tarjeta.getCliente().getClienteCorreo()
-                )
-            ))
-            .collect(Collectors.toList());
+                .map(tarjeta -> Map.of(
+                        "tarjetaId", tarjeta.getTarjetaId(),
+                        "numeroTarjeta", tarjeta.getTarjetaNumero(),
+                        "fechaVencimiento", tarjeta.getTarjetaFechaVencimiento(),
+                        "franquicia", tarjeta.getTarjetaFranquicia(),
+                        "estado", tarjeta.getTarjetaEstado(),
+                        "cupoTotal", tarjeta.getTarjetaCupoTotal(),
+                        "cupoDisponible", tarjeta.getTarjetaCupoDisponible(),
+                        "cupoUtilizado", tarjeta.getTarjetaCupoUtilizado(),
+                        "cliente", Map.of(
+                                "id", tarjeta.getCliente().getClienteId(),
+                                "nombre", tarjeta.getCliente().getClienteNombre(),
+                                "correo", tarjeta.getCliente().getClienteCorreo()
+                        )
+                ))
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(resultado);
     }
@@ -89,12 +75,21 @@ public class TarjetaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nueva);
     }
 
+    @PutMapping("/{tarjetaId}")
+    public ResponseEntity<Tarjeta> actualizarTarjeta(
+            @PathVariable Integer tarjetaId,
+            @RequestBody Tarjeta tarjeta) {
+        return tarjetaService.actualizarTarjeta(tarjetaId, tarjeta)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/actualizar_con_cupos/{tarjetaId}")
     public ResponseEntity<?> actualizarTarjetaConCupos(
             @PathVariable Integer tarjetaId,
             @RequestBody Tarjeta tarjetaActualizada) {
 
-        Optional<Tarjeta> actualizada = tarjetaService.actualizarTarjeta(tarjetaId, tarjetaActualizada);
+        Optional<Tarjeta> actualizada = tarjetaService.actualizarTarjetaConCupos(tarjetaId, tarjetaActualizada);
 
         if (actualizada.isPresent()) {
             return ResponseEntity.ok(actualizada.get());
@@ -104,4 +99,43 @@ public class TarjetaController {
         }
     }
 
-} 
+    @PutMapping("/actualizar_generales/{tarjetaId}")
+    public ResponseEntity<?> actualizarDatosGenerales(
+            @PathVariable Integer tarjetaId,
+            @RequestBody Tarjeta tarjetaActualizada) {
+
+        Optional<Tarjeta> actualizada = tarjetaService.actualizarDatosGeneralesTarjeta(tarjetaId, tarjetaActualizada);
+
+        if (actualizada.isPresent()) {
+            return ResponseEntity.ok(actualizada.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Tarjeta no encontrada con ID: " + tarjetaId);
+        }
+    }
+
+    @DeleteMapping("/{tarjetaId}")
+    public ResponseEntity<Tarjeta> inactivarTarjeta(@PathVariable Integer tarjetaId) {
+        return tarjetaService.inactivarTarjeta(tarjetaId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/actualizar_cupo_disponible/{tarjetaId}")
+    public ResponseEntity<?> actualizarCupoDisponible(
+            @PathVariable Integer tarjetaId,
+            @RequestBody Map<String, Double> request) {
+
+        double nuevoCupo = request.get("tarjetaCupoDisponible");
+
+        Optional<Tarjeta> tarjetaActualizada = tarjetaService.actualizarCupoDisponible(tarjetaId, nuevoCupo);
+
+        if (tarjetaActualizada.isPresent()) {
+            return ResponseEntity.ok(tarjetaActualizada.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Tarjeta no encontrada con ID: " + tarjetaId);
+        }
+    }
+
+}

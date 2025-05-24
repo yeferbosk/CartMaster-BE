@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+
 @Service
 public class TarjetaService {
 
@@ -31,10 +32,22 @@ public class TarjetaService {
         return tarjetaRepository.findById(tarjetaId);
     }
 
+    public List<Tarjeta> obtenerTarjetasConClientes() {
+        return tarjetaRepository.findAll();
+    }
+
+    public Tarjeta registrarTarjeta(Tarjeta tarjeta, Integer clienteId) {
+        Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
+        if (clienteOpt.isEmpty()) {
+            throw new RuntimeException("Cliente no encontrado con ID: " + clienteId);
+        }
+        tarjeta.setCliente(clienteOpt.get());
+        return tarjetaRepository.save(tarjeta);
+    }
+
     public Optional<Tarjeta> actualizarTarjeta(Integer tarjetaId, Tarjeta tarjetaActualizada) {
         return tarjetaRepository.findById(tarjetaId)
                 .map(tarjetaExistente -> {
-                    // Actualizamos solo los campos permitidos
                     if (tarjetaActualizada.getTarjetaEstado() != null) {
                         tarjetaExistente.setTarjetaEstado(tarjetaActualizada.getTarjetaEstado());
                     }
@@ -44,7 +57,47 @@ public class TarjetaService {
                     if (tarjetaActualizada.getTarjetaCupoDisponible() != null) {
                         tarjetaExistente.setTarjetaCupoDisponible(tarjetaActualizada.getTarjetaCupoDisponible());
                     }
-                    // No actualizamos tarjetaCupoUtilizado ya que es un campo calculado
+                    return tarjetaRepository.save(tarjetaExistente);
+                });
+    }
+
+    public Optional<Tarjeta> actualizarTarjetaConCupos(Integer tarjetaId, Tarjeta tarjetaActualizada) {
+        return tarjetaRepository.findById(tarjetaId)
+                .map(tarjetaExistente -> {
+                    if (tarjetaActualizada.getTarjetaEstado() != null) {
+                        tarjetaExistente.setTarjetaEstado(tarjetaActualizada.getTarjetaEstado());
+                    }
+                    if (tarjetaActualizada.getTarjetaFechaVencimiento() != null) {
+                        tarjetaExistente.setTarjetaFechaVencimiento(tarjetaActualizada.getTarjetaFechaVencimiento());
+                    }
+                    if (tarjetaActualizada.getTarjetaFranquicia() != null) {
+                        tarjetaExistente.setTarjetaFranquicia(tarjetaActualizada.getTarjetaFranquicia());
+                    }
+                    if (tarjetaActualizada.getTarjetaCupoTotal() != null) {
+                        tarjetaExistente.setTarjetaCupoTotal(tarjetaActualizada.getTarjetaCupoTotal());
+                    }
+                    if (tarjetaActualizada.getTarjetaCupoDisponible() != null) {
+                        tarjetaExistente.setTarjetaCupoDisponible(tarjetaActualizada.getTarjetaCupoDisponible());
+                    }
+                    return tarjetaRepository.save(tarjetaExistente);
+                });
+    }
+
+    public Optional<Tarjeta> actualizarDatosGeneralesTarjeta(Integer tarjetaId, Tarjeta tarjetaActualizada) {
+        return tarjetaRepository.findById(tarjetaId)
+                .map(tarjetaExistente -> {
+                    if (tarjetaActualizada.getTarjetaNumero() != null) {
+                        tarjetaExistente.setTarjetaNumero(tarjetaActualizada.getTarjetaNumero());
+                    }
+                    if (tarjetaActualizada.getTarjetaFechaVencimiento() != null) {
+                        tarjetaExistente.setTarjetaFechaVencimiento(tarjetaActualizada.getTarjetaFechaVencimiento());
+                    }
+                    if (tarjetaActualizada.getTarjetaFranquicia() != null) {
+                        tarjetaExistente.setTarjetaFranquicia(tarjetaActualizada.getTarjetaFranquicia());
+                    }
+                    if (tarjetaActualizada.getTarjetaEstado() != null) {
+                        tarjetaExistente.setTarjetaEstado(tarjetaActualizada.getTarjetaEstado());
+                    }
                     return tarjetaRepository.save(tarjetaExistente);
                 });
     }
@@ -58,56 +111,12 @@ public class TarjetaService {
                 });
     }
 
-    public List<Tarjeta> obtenerTarjetasConClientes() {
-        // Utilizamos findAll() que traerá las tarjetas con sus clientes gracias a la relación @ManyToOne
-        return tarjetaRepository.findAll();
-    }
-
-    public Tarjeta registrarTarjeta(Tarjeta tarjeta, Integer clienteId) {
-        Optional<Cliente> clienteOpt = clienteRepository.findById(clienteId);
-        if (clienteOpt.isEmpty()) {
-            throw new RuntimeException("Cliente no encontrado con ID: " + clienteId);
-        }
-
-        // Asociar cliente a la tarjeta
-        tarjeta.setCliente(clienteOpt.get());
-
-        // Guardar tarjeta (MySQL calculará tarjetaCupoUtilizado si es columna generada)
-        return tarjetaRepository.save(tarjeta);
-    }
-
-    public Optional<Tarjeta> actualizarTarjetaConCupos(Integer tarjetaId, Tarjeta tarjetaActualizada) {
+    public Optional<Tarjeta> actualizarCupoDisponible(Integer tarjetaId, double nuevoCupoDisponible) {
         return tarjetaRepository.findById(tarjetaId)
-                .map(tarjetaExistente -> {
-                    // Actualizar estado
-                    if (tarjetaActualizada.getTarjetaEstado() != null) {
-                        tarjetaExistente.setTarjetaEstado(tarjetaActualizada.getTarjetaEstado());
-                    }
-
-                    // Actualizar fecha de vencimiento
-                    if (tarjetaActualizada.getTarjetaFechaVencimiento() != null) {
-                        tarjetaExistente.setTarjetaFechaVencimiento(tarjetaActualizada.getTarjetaFechaVencimiento());
-                    }
-
-                    // Actualizar franquicia
-                    if (tarjetaActualizada.getTarjetaFranquicia() != null) {
-                        tarjetaExistente.setTarjetaFranquicia(tarjetaActualizada.getTarjetaFranquicia());
-                    }
-
-                    // Actualizar cupo total
-                    if (tarjetaActualizada.getTarjetaCupoTotal() != null) {
-                        tarjetaExistente.setTarjetaCupoTotal(tarjetaActualizada.getTarjetaCupoTotal());
-                    }
-
-                    // Actualizar cupo disponible
-                    if (tarjetaActualizada.getTarjetaCupoDisponible() != null) {
-                        tarjetaExistente.setTarjetaCupoDisponible(tarjetaActualizada.getTarjetaCupoDisponible());
-                    }
-
-                    // cupoUtilizado no se actualiza directamente (es generado)
-                    return tarjetaRepository.save(tarjetaExistente);
+                .map(tarjeta -> {
+                    tarjeta.setTarjetaCupoDisponible(nuevoCupoDisponible);
+                    return tarjetaRepository.save(tarjeta);
                 });
     }
 
-
-} 
+}
