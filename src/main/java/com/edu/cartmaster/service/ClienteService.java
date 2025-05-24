@@ -71,6 +71,14 @@ public class ClienteService {
         return null;
     }
 
+    /*public String login(String correo, String contrasena) {
+        // Buscar cliente
+        Optional<Cliente> clienteOpt = clienteRepository.findByClienteCorreo(correo);
+        if (clienteOpt.isPresent() && clienteOpt.get().getClienteContrasena().equals(contrasena)) {
+            return "CLIENTE";
+        }
+        return "CREDENCIALES_INVALIDAS";
+    }*/
 
     public List<Tarjeta> obtenerTarjetasPorClienteId(Integer clienteId) {
         return tarjetaRepository.findByCliente_ClienteId(clienteId);
@@ -96,7 +104,5 @@ public class ClienteService {
         // Finalmente eliminamos el cliente
         clienteRepository.delete(cliente);
     }
-
-
 
 }

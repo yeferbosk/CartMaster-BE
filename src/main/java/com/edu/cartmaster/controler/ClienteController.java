@@ -48,6 +48,17 @@ public class ClienteController {
         return ResponseEntity.ok(resultado);
     }
 
+    /*@PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody Map<String, String> credenciales) {
+        String correo = credenciales.get("correo");
+        String contrasena = credenciales.get("contrasena");
+        String resultado = clienteService.login(correo, contrasena);
+        if (resultado.equals("CREDENCIALES_INVALIDAS")) {
+            return ResponseEntity.status(401).body(resultado);
+        }
+        return ResponseEntity.ok(resultado);
+    }*/
+
     //EndPoint que trae todas las targetas de un usuario
     @GetMapping("/{id}/tarjetas")
     public ResponseEntity<List<Tarjeta>> obtenerTarjetas(@PathVariable Integer id) {
